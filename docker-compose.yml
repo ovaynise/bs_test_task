@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    environment:
+      - TZ=Europe/Minsk
+
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    environment:
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - REDIS_URL=redis://redis:6379/0
+      - BOT_LOG_FILE_PATH=/bot/bot.log
+      - TZ=Europe/Minsk
+    depends_on:
+      - redis
+    volumes:
+      - ./bot:/bot
+    command: >
+      sh -c "celery -A celery_app worker --loglevel=info & 
+             python task_bot.py"
+
+  celery-beat:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - TZ=Europe/Minsk
+    depends_on:
+      - redis
+    command: >
+      celery -A celery_app beat --loglevel=info
+
+  flower:
+    image: mher/flower:0.9.7
+    command: [ "flower", "--broker=redis://redis:6379/0" ]
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    environment:
+      - TZ=Europe/Minsk
