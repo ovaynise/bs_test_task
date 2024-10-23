@@ -22,11 +22,12 @@ def check_database():
 
 def check_redis():
     try:
-        r = redis.Redis(host='redis', port=6379, db=0)  # Измените 'localhost' на 'redis'
+        r = redis.Redis(host='redis', port=6379, db=0)
         r.ping()
         return True
     except Exception:
         return False
+
 
 def check_celery():
     try:
@@ -36,6 +37,7 @@ def check_celery():
         return result.stdout.strip() != b''
     except Exception:
         return False
+
 
 def check_flower():
     try:
