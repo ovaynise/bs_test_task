@@ -1,15 +1,19 @@
 FROM python:3.9
 
+# Устанавливаем рабочую директорию на корень приложения
 WORKDIR /app
 
-# Копируем requirements.txt из корневой папки
-COPY requirements.txt ./
+# Копируем всё содержимое проекта в рабочую директорию
+COPY . .
+
+# Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем содержимое папки bot
-COPY bot/ .
+# Устанавливаем PYTHONPATH, чтобы Python видел все модули в проекте
+ENV PYTHONPATH=/app
 
 # Установим переменную окружения для определения, какое приложение запускать
 ENV APP_TYPE=bot
 
-CMD ["sh", "-c", "if [ \"$APP_TYPE\" = 'bot' ]; then python main.py; else celery -A bot.celery_app.app $@; fi"]
+# Запуск бота или Celery в зависимости от переменной
+CMD ["python" ,"main.py"]

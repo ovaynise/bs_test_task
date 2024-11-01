@@ -1,12 +1,16 @@
-FROM python:3.9-slim
+FROM python:3.9
 
+# Устанавливаем рабочую директорию на корень приложения
 WORKDIR /app
 
-# Копируем файлы проекта в контейнер
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
+# Копируем всё содержимое проекта в рабочую директорию
 COPY . .
 
-# Команда для запуска Celery worker
-CMD ["celery", "-A", "tasks.celery_app", "worker", "--loglevel=info"]
+# Устанавливаем зависимости
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Устанавливаем PYTHONPATH, чтобы Python видел все модули в проекте
+ENV PYTHONPATH=/app
+
+# Запуск Celery worker
+CMD ["celery", "-A", "tasks:celery_app", "worker", "--loglevel=info"]

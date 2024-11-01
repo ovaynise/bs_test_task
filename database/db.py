@@ -1,9 +1,11 @@
-from sqlalchemy import create_engine, inspect, exc
-from sqlalchemy.orm import sessionmaker
-from models import Base, Task
-from logger import OvayLogger
-from config import LOG_PATCH
 from datetime import datetime
+
+from sqlalchemy import create_engine, exc, inspect
+from sqlalchemy.orm import sessionmaker
+
+from config import LOG_PATCH
+from core.logger import OvayLogger
+from database.models import Base, Task
 
 logger = OvayLogger(
     name="bd_logger", log_file_path=LOG_PATCH
@@ -25,7 +27,8 @@ class Database:
             existing_tables = inspector.get_table_names()
             logger.debug(f'Существующие таблицы: {existing_tables}')
             if not existing_tables:
-                logger.info('🟧Таблицы в БД не найдены. Начинаем создание таблиц...')
+                logger.info('🟧Таблицы в БД не найдены. Начинаем '
+                            'создание таблиц...')
                 try:
                     Base.metadata.create_all(self.engine)
                     logger.info('🟩Таблицы успешно созданы в базе данных.')
@@ -51,7 +54,8 @@ class Database:
         """Валидация описания задачи."""
         if not isinstance(description, str) or not description:
             logger.error("🛑Не удалось валидировать полученные данные БД: "
-                         f"описание должно быть непустой строкой.\n Передано {description}"
+                         f"описание должно быть непустой строкой.\n "
+                         f"Передано {description}"
                          f" c типом данных {type(description)}")
             return False
         return True
@@ -59,7 +63,8 @@ class Database:
     def validate_deadline(self, deadline) -> bool:
         """Валидация срока выполнения задачи."""
         if not isinstance(deadline, (str, datetime)):
-            logger.error("🛑Не удалось валидировать полученные данные БД:  срок должен быть строкой"
+            logger.error("🛑Не удалось валидировать полученные данные БД:"
+                         "  срок должен быть строкой"
                          f" или объектом datetime.\n Передано {datetime}"
                          f" c типом данных {type(datetime)}")
             return False
@@ -68,7 +73,8 @@ class Database:
     def validate_user_id(self, user_id: int) -> bool:
         """Валидация user_id."""
         if not isinstance(user_id, int) or user_id < 1:
-            logger.error("🛑Не удалось валидировать полученные данные БД:  user_id должен быть "
+            logger.error("🛑Не удалось валидировать полученные данные БД: "
+                         " user_id должен быть "
                          f"целым числом и больше 0.\n Передано {user_id}"
                          f" c типом данных {type(user_id)}")
             return False
@@ -77,7 +83,8 @@ class Database:
     def validate_task_id(self, task_id: int) -> bool:
         """Валидация task_id."""
         if not isinstance(task_id, int) or task_id < 1:
-            logger.error("🛑Не удалось валидировать полученные данные БД:  task_id должен быть "
+            logger.error("🛑Не удалось валидировать полученные данные БД: "
+                         " task_id должен быть "
                          "целым числом и больше 0..\n Передано {task_id}"
                          f" c типом данных {type(task_id)}")
             return False
@@ -100,7 +107,8 @@ class Database:
                 logger.info(f'🟩Задача {task} успешно добавлена в базу данных.')
                 return task
             except Exception as e:
-                logger.error(f"🛑Ошибка при добавлении задачи в базу данных: {e}")
+                logger.error(f"🛑Ошибка при добавлении задачи в базу "
+                             f"данных: {e}")
                 session.rollback()
                 return None
             finally:
@@ -140,7 +148,8 @@ class Database:
                     return task
                 else:
                     logger.warning(
-                        f"🟧Попытка удалить задачу {task_id}, но она не найдена в БД.")
+                        f"🟧Попытка удалить задачу {task_id}, но"
+                        f" она не найдена в БД.")
                     return None
             except Exception as e:
                 logger.error(f"🛑Ошибка при удалении задачи: {e}")
@@ -172,12 +181,13 @@ class Database:
                 return tasks
             except Exception as e:
                 logger.error(
-                    f"🛑Ошибка при получении задач для пользователя {user_id}: {e}")
+                    f"🛑Ошибка при получении задач для пользователя"
+                    f"{user_id}: {e}")
                 return None
             finally:
                 self.close_session(session)
 
-    def get_all_tasks(self):
+    def get_all_not_completed_tasks(self):
         with self._get_session() as session:
             try:
                 tasks = session.query(Task).filter_by(is_completed=False).all()

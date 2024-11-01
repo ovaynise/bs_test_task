@@ -1,15 +1,16 @@
-# flower/Dockerfile
+FROM python:3.9
 
-FROM python:3.9-slim
-
+# Устанавливаем рабочую директорию на корень приложения
 WORKDIR /app
 
-# Копируем requirements.txt из корня проекта
-COPY requirements.txt ./
+# Копируем всё содержимое проекта в рабочую директорию
+COPY . .
+
+# Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем весь код из celery_tasker
-COPY ../celery_tasker ./
+# Устанавливаем PYTHONPATH, чтобы Python видел все модули в проекте
+ENV PYTHONPATH=/app
 
-# Команда для запуска Flower
-CMD ["celery", "-A", "tasks.celery_app", "flower", "--loglevel=info", "--port=5555"]
+# Запуск Flower
+CMD ["celery", "-A", "tasks:celery_app", "flower", "--loglevel=info", "--port=5555"]

@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine
-import subprocess
 import re
+import subprocess
+
 import redis
+from sqlalchemy import create_engine
 
 
 def extract_datetime(text: str):

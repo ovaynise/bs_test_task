@@ -1,7 +1,8 @@
 import logging
+import os
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
-import os
+
 import pytz
 
 
@@ -12,7 +13,6 @@ class OvayLogger:
         self.setup_logging()
 
     def setup_logging(self):
-        # Проверка и создание директории
         os.makedirs(os.path.dirname(self.log_file_path), exist_ok=True)
 
         formatter = self.OvayFormatter(

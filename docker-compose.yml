@@ -5,6 +5,7 @@ services:
       - "6379:6379"
     environment:
       - TZ=Europe/Minsk
+
   bot:
     build:
       context: .
@@ -16,7 +17,8 @@ services:
     depends_on:
       - redis
     volumes:
-      - ./bot:/app
+      - ./bot:/app/bot
+      - .:/app
     command: sh -c "APP_TYPE=bot python main.py"
 
   celery:
@@ -24,28 +26,34 @@ services:
       context: .
       dockerfile: ./celery_tasker/Dockerfile
     volumes:
-      - ./celery_tasker:/app
+      - .:/app
     depends_on:
       - redis
-    command: celery -A tasks.celery_app worker --loglevel=info
+    command: celery -A tasks:celery_app worker --loglevel=info
+    environment:
+      - TZ=Europe/Minsk
 
   celery-beat:
     build:
       context: .
       dockerfile: ./celery_tasker/Dockerfile
     volumes:
-      - ./celery_tasker:/app
+      - .:/app
     depends_on:
       - redis
-    command: celery -A tasks.celery_app beat --loglevel=info
+    command: celery -A tasks:celery_app beat --loglevel=info
+    environment:
+      - TZ=Europe/Minsk
 
   flower:
     build:
       context: .
       dockerfile: ./flower/Dockerfile
     volumes:
-      - ./celery_tasker:/app
+      - .:/app
     ports:
       - "5555:5555"
     depends_on:
       - celery
+    environment:
+      - TZ=Europe/Minsk

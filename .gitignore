@@ -162,4 +162,7 @@ cython_debug/
 .idea/
 .env
 bot/test.py
-bot/tasks.db
+database/tasks.db
+bot.log
+venv
+bot/bot.log
